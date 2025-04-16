@@ -1,0 +1,199 @@
+---
+title: "Birds of Bryce Canyon National Park and Zion National Park: Analysis via Graphical Displays"
+subtitle: "Data from 2019"
+author: "Jenn Leishman"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  word_document: default
+header-includes:
+- \usepackage{fvextra}
+- \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
+---
+
+```{r include = FALSE}
+library(tidyverse)
+library(ggthemes)
+library(knitr)
+```
+
+\tableofcontents
+\newpage
+
+# Introduction
+
+National parks are the backbone of conservation in our country, and nobody can deny how diverse their ecosystems are. I have visited over 20 national parks in the past 5 years, and the five parks of Utah remain some of my favorite. For this project, I downloaded a datset of all national park species from tidytuesday, which posts weekly datasets on GitHub.^[Link to location of dataset on GitHub: https://github.com/rfordatascience/tidytuesday/tree/main/data/2024/2024-10-08] This dataset is directly from the National Park Service^[NPS database: https://irma.nps.gov/NPSpecies/], and contains 61,119 rows and 28 columns. In order to focus my analysis, I decided to only look at species from Bryce Canyon National Park, and Zion National Park: both of which I love dearly and are the parks I've visited most recently. I also chose to focus specifically on birds, which I was able to filter by category name. 
+
+28 columns provides lots of variables to choose from, but some notable variables that I ended up using include:
+
+- **ParkCode**: A shortened four-letter abbreviation for the park name
+- **ParkName**: The full national park name
+- **CategoryName**: For our consideration, this will be "Bird"
+- **Order**: The species order
+- **TEStatus**: Threatened/endangered status. Abbreviations are clarified in "TEStatusCodes" dataframe
+
+## Expectations and Questions of the Data
+
+I performed two different graphical analyses for this project. The first was to compare the distributions of bird orders in both Bryce Canyon and Zion. Important to note, this distribution is not about the actual amount of birds present, rather, the number of different species present in the parks. Given what I know about bird orders, I can assume that Passeriformes will be the most common bird order in each park, because they make up more than 60% of all birds. Also, given my knowledge of these two parks in particular, they are relatively rocky and dry, and not near an large oceans or bodies of water. Therefore, I can assume that orders including aquatic birds and waterfowl will occur in low percentages, while birds of prey and owls will likely be more common. I also expected Charadriiformes (ex: sandpipers) to be present. The environments of Bryce Canyon and Zion are relatively similar, considering their close location, so I was curious to see how the graphs would differ. 
+
+My second graphical analysis is related to endangered species status of birds in Zion and Bryce Canyon. I expected a lot of the Passerifromes to not have a high number of endangered species, and orders such as Strigiformes and Acciptriformes to have higher proportions of endangered/threatened species. When I present this graphical analysis, I will go more into depth of how endangered status is classified.
+
+## Some Notes About Orders
+
+Because most people are not familiar with different orders of bird species, I've included some clarification.
+
+- **Acciptriformes**: birds of prey, including hawks, eagles, and vultures
+- **Anseriformes**: waterfowl, including ducks and geese
+- **Apodiformes**: birds with very small legs and feet, mostly hummingbirds and swifts
+- **Caprimulgiformes**: birds with long wings and short legs/bills, including nightjars and frogmouths
+- **Charadriiformes**: a diverse order of small and medium birds, including some sandpipers and killdeer
+- **Columbiformes**: bird order consisting of doves and pigeons
+- **Coraciiformes**: colorful birds, including kingfishers and bee-eaters
+- **Cuculiformes**: primarily cuckoos and roadrunners
+- **Falconiformes**: bird order consisting of mostly falcons and kestrels
+- **Gaviiformes**: loons
+- **Galliformes**: landfowl, including turkeys, chickens, and quail
+- **Gruiformes**: "crane-like", including wading and terrestrial birds
+- **Passeriformes**: largest order of birds, primarily perching birds
+- **Pelecaniformes**: pelicans and other medium/large waterbirds
+- **Piciformes**: arboreal birds,including woodpeckers
+- **Podicipediformes**: aquatic diving birds, including grebes
+- **Strigiformes**: owls!
+
+```{r include = FALSE}
+# read in the csv file with our data, save to nps dataframe
+nps <- read_csv("most_visited_nps_species_data.csv")
+```
+
+\newpage
+
+# Graph 1: Comparing distributions of orders in Bryce & Zion
+
+```{r include = FALSE}
+# create cleaned dataframe with just the bird data, as well as grouping, creating a count of species, and checking for NA
+bryce_zion_birds <- nps |>
+  filter(
+    ParkName == "Zion National Park" |
+    ParkName == "Bryce Canyon National Park",
+    CategoryName == "Bird",
+    !is.na(Order)
+  ) |>
+  group_by(ParkCode, Order, CommonNames, Abundance, Nativeness) |>
+  summarize(Count = n())
+```
+
+```{r include = FALSE}
+# creates labels for facets
+ParkCodeLabs <- as_labeller(c("BRCA" = "Bryce Canyon", "ZION" = "Zion"))
+```
+
+```{r warning = FALSE}
+ggplot(bryce_zion_birds, aes( 
+         x = Order,
+         y = Count,
+         fill = ParkCode)
+) + geom_bar(stat = "identity", stack = "dodge") +
+  coord_flip() +
+  facet_wrap(
+    ~ParkCode,
+    labeller = ParkCodeLabs
+    ) +
+  scale_fill_manual(values = 
+    c("#FF7F0FFF",
+      "#FFB977FF"
+     )) +
+  labs(
+    title = "Bird Orders and Species Counts",
+    y = "Species Count"
+  ) +
+  theme_linedraw()
+```
+
+## Analysis
+
+For this graph, I chose to use a faceted bar graph in order to compare Bryce Canyon and Zion data side by side. I also chose to switch the axes, so that the bird order would be readable and not squished. The x axis contains the different orders of birds present in our data (refer to the introduction as a reminder of what types of birds these refer to), and the y axis is the count of different species present in each order. I decided to use a bar graph, because it can clearly represent the qualitative variables of the different Orders, and clearly show individual bars for each order. I chose orange and the shade for these graphs simply because it reminds me of the rock formations found in these national parks. 
+
+As expected, the largest count of species is for Passeriformes in both Bryce Canyon and Zion. There are more Passeriformes total found in Zion National Park, however, this can likely be at least partially attributed the larger number of total species in Zion versus Bryce Canyon. The other orders all remain relatively low in species counts, with Accipitriformes and Anseriformes being some of the highest at around 15 species. I hypothesized Accipitriformes to be relatively high considering they are birds of prey. However, I also hypothesized Strigiformes to be quite high, and while there are more present in Zion, there are maybe 10 species present in that order, and even less in Bryce Canyon. Interestingly, there are three orders that are present in Zion and not in Bryce: Gaviiformes, Cuculiformes, and Coraciiformes.
+
+\newpage
+
+# Graph 2: Comparing Threatened/Endangered status of bird orders
+
+```{r include = FALSE}
+# creates "endangered" dataframe to group by TEStatus, and again create a count of species in each order
+endangered <- nps |>
+  filter(
+    ParkName == "Bryce Canyon National Park" |
+    ParkName == "Zion National Park",
+    CategoryName == "Bird",
+    !is.na(Order)
+  ) |>
+  group_by(ParkCode, Order, TEStatus) |>
+  summarize(count = n())
+```
+
+```{r include = FALSE}
+#create df with all of the TEStatus codes
+TEStatusCodes <- tribble(
+  ~Code, ~Meaning,
+  "SC", "Species of concern",
+  "RT", "Resolved taxon",
+  "EXPN", "Experimental population, non-essential",
+  "50", "Not listed",
+  "DM", "Recovery",
+  "SU", "Status undefined",
+  "UR", "Under review",
+  "E", "Endangered",
+  "T", "Threatened"
+)
+```
+
+```{r warning = FALSE}
+ggplot(endangered, aes(
+    x = Order,
+    y = count,
+    fill = TEStatus
+  )) +
+  geom_bar(
+    stat = "identity", 
+    position = "fill"
+  ) +
+  coord_flip() +
+  facet_wrap(
+    ~ParkCode,
+    labeller = ParkCodeLabs
+    ) +
+  scale_fill_manual(values = 
+    c("#98D9E4FF", "#86B4A9FF", "#FF7F0FFF", "#FFB977FF", "#3CB7CCFF", "#ACD98DFF", "#32A251FF", "#FFD94AFF", "#82853BFF"), 
+      na.value = "#39737CFF"
+  ) +
+  labs(
+    title = "Endangered and threatened order status",
+    y = "Percent of each status"
+  ) +
+  theme_linedraw()
+```
+
+## Threatened/Endangered Status Codes Guide
+
+```{r echo = FALSE}
+kable(TEStatusCodes)
+```
+
+## Analysis 
+
+Quite frankly, before performing this analysis, I did not know exactly what to expect, as I'm not very knowledgeable about endangered species of birds. Similar to my last graph, I chose to use a faceted bar graph in order to fully display the different orders of birds as well as the variations between the two parks. With this graph in particular, I chose to use a stacked bar plot, with the fill being the threatened/endangered status code, and each bar filling up the entire y axis, allowing to see percents rather than individual counts. 
+
+I also created a dataframe to show the meaning of each status code. I did not choose to remove NA values when cleaning this particular dataframe focusing on TEStatus, because this way we are able to visualize which orders have less endangered species: if an order is not listed with a threatened/endangered status code, that means that it is not at any sort of risk. On the other hand, the code 50 means that the information isn't available: a risk may be present and we just are not aware of it.
+
+Some observations include that 50% of cuculiforme species in Zion are threatened. The only order that has any actual endangered species are Passeriformes, with a very small (likely 1 or 2) endangered species in both parks. Also, there are experimental populations of acciptriformes in both parks as well.
+
+\newpage
+
+# Conclusion 
+
+I love birds, as well as our National Parks. Especially considering the conservation of National Parks are somewhat under threat under the current political climate, it's important to gain awareness of the species that these environments are home to. Furthermore, it's useful to look at amounts of species present in the parks in order to consider the orders that may be most at risk.
+
+I had wanted to look more specifically at number of individual species observations, however, this data was not available in this dataset specifically. Observations were not well recorded at least for these two parks. I'd appreciate looking more into bird populations in the national parks in the context of a different dataset that allowed me to see amounts of individual species present, rather than simply the variety of species present in the park.
+
+Again, even though not available in this dataset, I'd love to also evaluate bird populations in the other three Utah national parks: Capitol Reef, Canyonlands, and Arches. I'd love to see how different bird populations very in relatively similar ecological environments.
