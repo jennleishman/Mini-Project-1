@@ -1,6 +1,6 @@
 # Birds of Bryce Canyon National Park and Zion National Park: Analysis via Graphical Displays
 
-Access [Project PDF](jennleishman.github.io/Mini-Project-1/mini_project_1/dataAnaylsis.pdf)<br>
+Access [Project PDF](https://jennleishman.github.io/Mini-Project-1/mini_project_1/dataAnaylsis.pdf)<br>
 Access [GitHub Repository](https://github.com/jennleishman/Mini-Project-1/tree/908c266f5f25ac0eac695ec7c2fed39b8ba125ee/mini_project_1)
 
 This mini project was an assignment for STAT-228: Intro to Data Science at Simmons Univesity, Spring 2025. 
